@@ -1,6 +1,9 @@
 {
   "name": "hardhat-project",
-  "scripts": {},
+  "scripts": {
+    "deployNFT:bscTestnet":"npx hardhat run ./scripts/nft/deployNFTMain.ts --network bscTestnet",
+    "verify:bscTestnet":" npx hardhat verify 0xb6720F00c4ce661FE3bEC23eD7d59Bc6D038655F --network bscTestnet"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "hardhat": "^2.11.1",

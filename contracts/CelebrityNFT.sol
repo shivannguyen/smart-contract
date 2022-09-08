@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
-contract RunnowNFTUpgradeableV2 is
+contract CelebrityUpgradeable is
     ERC721Upgradeable,
     OwnableUpgradeable,
     EIP712Upgradeable,
@@ -92,6 +92,10 @@ contract RunnowNFTUpgradeableV2 is
         operator = _operator;
     }
 
+     function setFundAddress(address _fundAddress) external onlyOwner {
+        fundAddress = _fundAddress;
+    }
+
     function _verifyNFTBuy(BuyNFTStruct calldata data)
         internal
         view
@@ -149,7 +153,7 @@ contract RunnowNFTUpgradeableV2 is
             (bool success, ) = fundAddress.call{value: price}("");
             require(success, "Transfer payment to admin failed");
             if (refAmount != 0) {
-                (success, ) = fundAddress.call{value: refAmount}("");
+                (success, ) =  data.refAddress.call{value: refAmount}("");
                 require(success, "Transfer payment to ref failed");
             }
         } else {
