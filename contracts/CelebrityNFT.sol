@@ -10,10 +10,8 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
 contract CelebrityUpgradeable is
-    ERC721Upgradeable,
     OwnableUpgradeable,
     EIP712Upgradeable,
     ERC721EnumerableUpgradeable
@@ -67,21 +65,35 @@ contract CelebrityUpgradeable is
         commissionRate = 10;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
-        super._beforeTokenTransfer(from, to, tokenId);
+     function returnID() public view returns (uint256) {
+        return totalSupply();
     }
 
-    function supportsInterface(bytes4 interfaceId)
+    function tokenURI(uint256 tokenId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
-        returns (bool)
+        virtual
+        override
+        returns (string memory)
     {
-        return super.supportsInterface(interfaceId);
+        require(
+            _exists(tokenId),
+            "ERC721URIStorage: URI query for nonexistent token"
+        );
+
+        string memory _tokenURI = _tokenURIs[tokenId];
+        string memory base = _baseURI();
+
+        // If there is no base URI, return the token URI.
+        if (bytes(base).length == 0) {
+            return _tokenURI;
+        }
+        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
+        if (bytes(_tokenURI).length > 0) {
+            return string(abi.encodePacked(base, _tokenURI));
+        }
+
+        return super.tokenURI(tokenId);
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -94,6 +106,17 @@ contract CelebrityUpgradeable is
 
      function setFundAddress(address _fundAddress) external onlyOwner {
         fundAddress = _fundAddress;
+    }
+
+       function _setTokenURI(uint256 tokenId, string memory _tokenURI)
+        internal
+        virtual
+    {
+        require(
+            _exists(tokenId),
+            "ERC721URIStorage: URI set of nonexistent token"
+        );
+        _tokenURIs[tokenId] = _tokenURI;
     }
 
     function _verifyNFTBuy(BuyNFTStruct calldata data)
@@ -126,14 +149,10 @@ contract CelebrityUpgradeable is
             );
     }
 
-    function returnID() public view returns (uint256) {
-        return totalSupply();
-    }
-
     function buyNFT(BuyNFTStruct calldata data) public payable {
         address signer = _verifyNFTBuy(data);
         // Make sure that the signer is authorized to mint an item
-        require(signer == operator, "Signature invalid or unauthorized");
+        require(signer == owner(), "Signature invalid or unauthorized");
 
         // Check nonce
         require(!_noncesMap[data.nonce], "The nonce has been used");
@@ -183,43 +202,5 @@ contract CelebrityUpgradeable is
             data.price,
             uint64(block.timestamp)
         );
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721URIStorage: URI query for nonexistent token"
-        );
-
-        string memory _tokenURI = _tokenURIs[tokenId];
-        string memory base = _baseURI();
-
-        // If there is no base URI, return the token URI.
-        if (bytes(base).length == 0) {
-            return _tokenURI;
-        }
-        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-        if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(base, _tokenURI));
-        }
-
-        return super.tokenURI(tokenId);
-    }
-
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI)
-        internal
-        virtual
-    {
-        require(
-            _exists(tokenId),
-            "ERC721URIStorage: URI set of nonexistent token"
-        );
-        _tokenURIs[tokenId] = _tokenURI;
     }
 }

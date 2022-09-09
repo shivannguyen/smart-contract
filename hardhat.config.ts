@@ -35,8 +35,8 @@ const config: HardhatUserConfig = {
       //   mnemonic: process.env.MNEMONIC_BSC_PROD,
       // },
       accounts:
-        process.env.PRIVATE_KEY_MAINNET !== undefined
-          ? [process.env.PRIVATE_KEY_MAINNET]
+        process.env.PRIVATE_KEY !== undefined
+          ? [process.env.PRIVATE_KEY]
           : [],
     },
     bscTestnet: {
